@@ -1,0 +1,150 @@
+00277:000100010101:005
+01364:010101010100:016
+00259:000100000011:006
+01361:010101010001:001
+00274:000100010010:002
+00003:000000000011:003
+00002:000000000010:002
+00278:000100010110:005
+00018:000000010010:001
+00279:000100010111:005
+00000:000000000000:010
+00275:000100010011:002
+00256:000100000000:008
+00273:000100010001:003
+00258:000100000010:004
+00341:000101010101:004
+00276:000100010100:003
+00272:000100010000:002
+01367:010101010111:008
+00342:000101010110:002
+00262:000100000110:001
+00340:000101010100:004
+01365:010101010101:009
+01300:010100010100:002
+00017:000000010001:001
+01366:010101010110:011
+00257:000100000001:003
+01302:010100010110:001
+01303:010100010111:003
+00001:000000000001:003
+
+** 260 padrões; 50 individuos; 150 iterações; 10% de probabilidade de mutação
+
+> 156 patterns matched [60.0%]
+> Rule 011.011.011.010.011.010
+ - Interesse e compromisso....... < "Ótimo"
+ - Assiduidade e pontualidade.... < "Ótimo"
+ - Iniciativa.................... < "Ótimo"
+ - Respeito às normas............ < "Muito bom"
+ - Cordialidade.................. < "Ótimo"
+ - Desempenho final.............. < "B"
+
+> 63 patterns matched [24.2%]
+> Rule 010.011.001.011.001.010
+ - Interesse e compromisso....... < "Muito bom"
+ - Assiduidade e pontualidade.... < "Ótimo"
+ - Iniciativa.................... < "Bom"
+ - Respeito às normas............ < "Ótimo"
+ - Cordialidade.................. < "Bom"
+ - Desempenho final.............. < "B"
+
+> 1 patterns matched [0.4%]
+> Rule 011.001.010.100.010.110
+ - Interesse e compromisso....... < "Ótimo"
+ - Assiduidade e pontualidade.... < "Bom"
+ - Iniciativa.................... < "Muito bom"
+ - Respeito às normas............ > "Regular ou Insuficiente"
+ - Cordialidade.................. < "Muito bom"
+ - Desempenho final.............. > "B"
+
+
+
+
+
+> 122 patterns matched [46.9%]
+> Rule 011.011.011.100.100.011
+ - Interesse e compromisso....... < "Ótimo"
+ - Assiduidade e pontualidade.... < "Ótimo"
+ - Iniciativa.................... < "Ótimo"
+ - Respeito às normas............ > "Regular ou Insuficiente"
+ - Cordialidade.................. > "Regular ou Insuficiente"
+ - Desempenho final.............. < "A"
+
+> 122 patterns matched [46.9%]
+> Rule 011.011.011.100.100.011
+ - Interesse e compromisso....... < "Ótimo"
+ - Assiduidade e pontualidade.... < "Ótimo"
+ - Iniciativa.................... < "Ótimo"
+ - Respeito às normas............ > "Regular ou Insuficiente"
+ - Cordialidade.................. > "Regular ou Insuficiente"
+ - Desempenho final.............. < "A"
+
+> 140 patterns matched [53.8%]
+> Rule 011.011.011.100.010.011
+ - Interesse e compromisso....... < "Ótimo"
+ - Assiduidade e pontualidade.... < "Ótimo"
+ - Iniciativa.................... < "Ótimo"
+ - Respeito às normas............ > "Regular ou Insuficiente"
+ - Cordialidade.................. < "Muito bom"
+ - Desempenho final.............. < "A"
+
+> 140 patterns matched [53.8%]
+> Rule 011.011.011.100.010.011
+ - Interesse e compromisso....... < "Ótimo"
+ - Assiduidade e pontualidade.... < "Ótimo"
+ - Iniciativa.................... < "Ótimo"
+ - Respeito às normas............ > "Regular ou Insuficiente"
+ - Cordialidade.................. < "Muito bom"
+ - Desempenho final.............. < "A"
+
+* 16 rules matched to none of the 37 patterns!
+
+! distinct patterns: 37
+! total patterns: 260
+! population: 20
+! iterations: 100
+! probablity: 0.1%
+
+> 48 patterns matched [18.5%]
+> Rule 100.010.100.100.010.100
+ - Interesse e compromisso....... > "Regular ou Insuficiente"
+ - Assiduidade e pontualidade.... < "Muito bom"
+ - Iniciativa.................... > "Regular ou Insuficiente"
+ - Respeito às normas............ > "Regular ou Insuficiente"
+ - Cordialidade.................. < "Muito bom"
+ - Desempenho final.............. > "D"
+
+> 70 patterns matched [26.9%]
+> Rule 100.010.100.100.010.011
+ - Interesse e compromisso....... > "Regular ou Insuficiente"
+ - Assiduidade e pontualidade.... < "Muito bom"
+ - Iniciativa.................... > "Regular ou Insuficiente"
+ - Respeito às normas............ > "Regular ou Insuficiente"
+ - Cordialidade.................. < "Muito bom"
+ - Desempenho final.............. < "A"
+
+---------------------------------------------------------------------------------------------------
+! distinct patterns...: 37
+! total patterns......: 260
+! population..........: 20
+! iterations..........: 100
+! probablity..........: 10.0%
+
+> 82 patterns matched [31.5%]
+> Rule 011.010.010.011.001.011
+ - Interesse e compromisso....... < "Ótimo"
+ - Assiduidade e pontualidade.... < "Muito bom"
+ - Iniciativa.................... < "Muito bom"
+ - Respeito às normas............ < "Ótimo"
+ - Cordialidade.................. < "Bom"
+ - Desempenho final.............. < "A"
+
+> 208 patterns matched [80.0%]
+> Rule 011.010.010.011.011.011
+ - Interesse e compromisso....... < "Ótimo"
+ - Assiduidade e pontualidade.... < "Muito bom"
+ - Iniciativa.................... < "Muito bom"
+ - Respeito às normas............ < "Ótimo"
+ - Cordialidade.................. < "Ótimo"
+ - Desempenho final.............. < "A"
