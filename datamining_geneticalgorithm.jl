@@ -1,8 +1,8 @@
 ﻿function load()
 
-  max::Uint = 4096 #12 bits = 4096
+  max::Uint = 4096 #12 bits
 
-  rawdata = readcsv("C:\\Users\\Luis\\Documents\\mineracao_atitudinais.csv", Uint)
+  rawdata = readcsv("attitudinal_extracted_treated_data.csv", Uint) #cd("YOUR_FILE_DIRECTORY")!
   patterns = Array(Uint,max)
   fill!(patterns,0)
 
@@ -31,8 +31,8 @@
     end
   end
 
-  return (total,globaltotal) #returns the total of different patterns
-                             #and the global total of patterns
+  #returns the total of different patterns and the global total of patterns
+  return (total,globaltotal)
 end
 
 #get(loadeddata,3,-1) # retorna um valor com base em uma chave de busca
@@ -76,8 +76,8 @@ function objective(d::Dict{Uint,Uint}, r::Uint) #d:data patterns to be analized,
 
       #"less than" perspective
       if ((r & mskpersp) >> (RULE_SIZE - offsetrule + 2)) == 0
-        #line #135
-        if !( ((t[1] & mskattpatt) >> (PATTERN_SIZE - offsetpatt)) <= ((r & mskattrule) >> (RULE_SIZE - offsetrule)) )
+        #line #138
+        if !( ((t[1] & mskattpatt) >> (PATTERN_SIZE - offsetpatt)) < ((r & mskattrule) >> (RULE_SIZE - offsetrule)) )
           match = false
           break
         end
@@ -85,8 +85,8 @@ function objective(d::Dict{Uint,Uint}, r::Uint) #d:data patterns to be analized,
       #"greater or equal than" perspective
       else
         #experiments with '>' or '>='
-        #line #137
-        if !( ((t[1] & mskattpatt) >> (PATTERN_SIZE - offsetpatt)) > ((r & mskattrule) >> (RULE_SIZE - offsetrule)) )
+        #line #140
+        if !( ((t[1] & mskattpatt) >> (PATTERN_SIZE - offsetpatt)) >= ((r & mskattrule) >> (RULE_SIZE - offsetrule)) )
           match = false
           break
         end
@@ -114,8 +114,10 @@ function objective(d::Dict{Uint,Uint}, r::Uint) #d:data patterns to be analized,
 end
 
 function ruleinterpreter(r::Uint)
-  mskattrule::Uint = 3 << 15 #mask for attitudinal rule block segmentation
-  mskattpersp::Uint = 1 << 17 #mask for attitudinal perspective operator (0 = less than, 1 = greater or iquals to)
+  #mask for attitudinal rule block segmentation
+  mskattrule::Uint = 3 << 15
+  #mask for attitudinal perspective operator (0 = less than, 1 = greater or iquals to)
+  mskattpersp::Uint = 1 << 17
 
   print("\n> Rule ")
 
@@ -133,9 +135,9 @@ function ruleinterpreter(r::Uint)
 
     #Attitudinal perspective
     if (r & mskattpersp) == 0
-      print("<= ") #print("less than ")
+      print("<   ") #print("less than ")
     else
-      print(">  ") #print("greater than or equals to ")
+      print(">=  ") #print("greater than or equals to ")
     end
 
     if i::Uint < GROUPS
@@ -178,16 +180,16 @@ end
 function mutate!(pop::Array{Uint,1}, prob::Float32)
   for i::Uint = 1:length(pop)
     if(rand() > 1 - prob) #randomly opts to mutation
-      pop[i] $= 1 << rand(0:RULE_SIZE - 1) #mutates one gene (XOR)
+      pop[i] $= (1 << rand(0:RULE_SIZE - 1)) #mutates one gene (XOR)
     end
   end
 end
 
 function fatherbytournament(pop::Array{Uint,1})
   (s1::Uint, s2::Uint, s3::Uint) = rand(1:length(pop), 3) #selects three specimen randomly
-  avs1::Uint = objective(loadeddata,pop[s1]) #avaliate specimen #1
-  avs2::Uint = objective(loadeddata,pop[s2]) #avaliate specimen #2
-  avs3::Uint = objective(loadeddata,pop[s3]) #avaliate specimen #3
+  avs1::Uint = objective(loadeddata,pop[s1]) #evaluate specimen #1
+  avs2::Uint = objective(loadeddata,pop[s2]) #evaluate specimen #2
+  avs3::Uint = objective(loadeddata,pop[s3]) #evaluate specimen #3
 
   #returns the best of the three specimens
   if(avs1 <= avs2 <= avs3)
@@ -234,8 +236,8 @@ function crossing!(pop::Array{Uint,1}, newpop::Array{Uint,1})
     s2 |= geness1
 
     #evaluates the two new specimens
-    avs1::Uint = objective(loadeddata,s1) #avaliate specimen #1
-    avs2::Uint = objective(loadeddata,s2) #avaliate specimen #2
+    avs1::Uint = objective(loadeddata,s1) #evaluate specimen #1
+    avs2::Uint = objective(loadeddata,s2) #evaluate specimen #2
 
     #... and keeps the best of both
     if(avs1 > avs2)
