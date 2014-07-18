@@ -1,17 +1,48 @@
-﻿function load()
+﻿#= Mining and evolution functions =#
 
-  max::Uint = 4096 #12 bits
+function init()
+  #parametric constants
+  global const MSK_2BITS          = 3
 
-  rawdata = readcsv("attitudinal_extracted_treated_data.csv", Uint) #cd("YOUR_FILE_DIRECTORY")!
+  global const GROUPS             = 6
+
+  global const PATTERN_GROUP_SIZE = 2
+  global const PATTERN_SIZE       = GROUPS * PATTERN_GROUP_SIZE
+
+  global const RULE_GROUP_SIZE    = 4
+  global const RULE_SIZE          = GROUPS * RULE_GROUP_SIZE
+
+  global const MSK_FULLBITS       = (~0 >>> (sizeof(Int) * 8 - RULE_SIZE))
+  global const MAX_RULE           = MSK_FULLBITS
+
+  global const EQUALS_TO        = 0b11
+  global const GREATER_THAN     = 0b10
+  global const LESS_THAN        = 0b01
+  global const DIFFERENT_FROM   = 0b00
+
+  global loadeddata             = Dict{Uint,Uint}()
+
+  global const attaspect        = [ "Interesse e compromisso", "Assiduidade e pontualidade", "Iniciativa", "Respeito às normas", "Cordialidade", "Desempenho final"]
+  global const attconcept       = [ "Regular ou Insuficiente", "Bom", "Muito bom", "Ótimo" ]
+  global const performance      = [ "D", "C", "B", "A" ]
+end
+
+function load()
+
+  max::Uint = 2 ^ PATTERN_SIZE
+
+  #cd("YOUR_FILE_DIRECTORY")!
+  cd("C:/Users/Luis/Documents/gece/gece_dm_attitudinal")
+  rawdata = readcsv("attitudinal_extracted_treated_data.csv", Uint)
   patterns = Array(Uint,max)
   fill!(patterns,0)
 
-  #calculates the range of each of different patterns
+  #calculates the range of each of distinct patterns
   for i::Uint in rawdata
     patterns[i+1] += 1 #([i+1]) 1-based for arrays and also acts as differentiator for nulls patterns
   end
 
-  #compute the total of patterns
+  #compute the total of distinct patterns
   total::Uint = 0
   for pattern in patterns
     if pattern != 0
@@ -31,62 +62,62 @@
     end
   end
 
-  #returns the total of different patterns and the global total of patterns
+  #returns the total of distinct patterns and the global total of patterns
   return (total,globaltotal)
 end
 
-#get(loadeddata,3,-1) # retorna um valor com base em uma chave de busca
-
-#=
-Mining and evolution functions
-=#
-
-function init()
-  global const BITS1 = 1
-  global const BITS2 = 3
-  global const PATTERN_SIZE = 12
-  global const GROUP_SIZE = 3
-  global const GROUPS = 6
-  global const RULE_SIZE = GROUP_SIZE * GROUPS
-  global const FULLBITS = (~0 >>> (sizeof(Int) * 8 - RULE_SIZE))
-
-  global loadeddata = Dict{Uint,Uint}()
-
-  global const attaspect = [ "Interesse e compromisso", "Assiduidade e pontualidade", "Iniciativa", "Respeito às normas", "Cordialidade", "Desempenho final"]
-  global const attconcept = [ "Regular ou Insuficiente", "Bom", "Muito bom", "Ótimo" ]
-  global const performance = [ "D", "C", "B", "A" ]
-end
-
-#chromosome validation
+#chromosome efficiency
 function objective(d::Dict{Uint,Uint}, r::Uint) #d:data patterns to be analized, r:rule to be applied
 
   reach::Uint = 0 #objective's reach
 
   for t in d #t:tuple with (key:pattern in the data group, value:amount of data represented)
 
-    match::Bool = true #rule matches pattern (or not!)
-    mskattpatt::Uint = BITS2 << 10 #mask for attitudinal pattern block segmentation
-    mskattrule::Uint = BITS2 << 15 #mask for rule block segmentation
-    mskpersp::Uint = BITS1 << 17 #mask for perspective operator (0 = less than, 1 = greater or iquals to)
+    match::Bool       = true #rule matches to pattern (or not!)
+    mskattpatt::Uint  = (MSK_2BITS << (PATTERN_SIZE - PATTERN_GROUP_SIZE)) #mask for attitudinal pattern block segment
+    mskattrule::Uint  = (MSK_2BITS << (RULE_SIZE - RULE_GROUP_SIZE)) #mask for rule block segment
+    mskattpersp::Uint = (MSK_2BITS << (RULE_SIZE - RULE_GROUP_SIZE + 2)) #mask for perspective operator
 
-    offsetpatt::Uint = 2 #offset for pattern
-    offsetrule::Uint = GROUP_SIZE #offset for rule
+    offsetpatt::Uint  = PATTERN_GROUP_SIZE #offset for pattern
+    offsetrule::Uint  = RULE_GROUP_SIZE #offset for rule
 
     for b::Uint in 1:GROUPS
 
-      #"less than" perspective
-      if ((r & mskpersp) >> (RULE_SIZE - offsetrule + 2)) == 0
-        #line #138
-        if !( ((t[1] & mskattpatt) >> (PATTERN_SIZE - offsetpatt)) < ((r & mskattrule) >> (RULE_SIZE - offsetrule)) )
+      perspective::Uint = ((r & mskattpersp) >>> (RULE_SIZE - offsetrule + 2))
+      ruleaspect::Uint = ((r & mskattrule) >>> (RULE_SIZE - offsetrule ))
+      patternaspect::Uint = ((t[1] & mskattpatt) >>> (PATTERN_SIZE - offsetpatt))
+
+#= Debug
+      #$(lpad(XXXX,10," "))
+      print("* ( $(lpad(r,10," ")) & $(lpad(mskattpersp,10," ")) ) >>> ")
+      print("$(lpad(RULE_SIZE,10," ")) - $(lpad(offsetrule,10," ")) + 2)")
+      println(" = $(perspective)")
+=#
+
+      #"different from" perspective
+      if perspective == DIFFERENT_FROM
+        if !(patternaspect != ruleaspect)
           match = false
           break
         end
 
-      #"greater or equal than" perspective
+      #"less than" perspective
+      elseif perspective == LESS_THAN
+        if !(patternaspect < ruleaspect)
+          match = false
+          break
+        end
+
+      #"greater than" perspective
+      elseif perspective == GREATER_THAN
+        if !(patternaspect > ruleaspect)
+          match = false
+          break
+        end
+
+      #"equals to" perspective
       else
-        #experiments with '>' or '>='
-        #line #140
-        if !( ((t[1] & mskattpatt) >> (PATTERN_SIZE - offsetpatt)) >= ((r & mskattrule) >> (RULE_SIZE - offsetrule)) )
+        if !(patternaspect == ruleaspect)
           match = false
           break
         end
@@ -94,90 +125,102 @@ function objective(d::Dict{Uint,Uint}, r::Uint) #d:data patterns to be analized,
       end
 
       #next group
-      mskattpatt >>= 2
-      mskattrule >>= 3
-      mskpersp >>= 3
+      mskattpatt >>= PATTERN_GROUP_SIZE
+      mskattrule >>= RULE_GROUP_SIZE
+      mskattpersp >>= RULE_GROUP_SIZE
 
-      offsetrule += 3
-      offsetpatt += 2
+      offsetrule += RULE_GROUP_SIZE
+      offsetpatt += PATTERN_GROUP_SIZE
 
     end
-
-    if match
-      #println(" = $(t[1])")
-      reach += t[2]
-    end
-
   end
 
   return reach
 end
 
 function ruleinterpreter(r::Uint)
-  #mask for attitudinal rule block segmentation
-  mskattrule::Uint = 3 << 15
-  #mask for attitudinal perspective operator (0 = less than, 1 = greater or iquals to)
-  mskattpersp::Uint = 1 << 17
+  #mask for attitudinal rule block segment
+  mskattrule::Uint = (MSK_2BITS << (RULE_SIZE - RULE_GROUP_SIZE))
+  #mask for attitudinal perspective operator
+  mskattpersp::Uint = (MSK_2BITS << (RULE_SIZE - RULE_GROUP_SIZE + 2))
 
   print("\n> Rule ")
 
-  for p::Uint in 0:3:15
-   i=15+p
-   j=17+p
-   print(bits(r)[i:j],(p < 15 ? ".": ""))
+  for p::Uint in 1:RULE_GROUP_SIZE:RULE_SIZE
+    i = (sizeof(Int) * 8) - RULE_SIZE + p
+    j = i + RULE_GROUP_SIZE - 1
+    print(bits(r)[i:i+1],".")
+    print(bits(r)[i+2:j],(p < RULE_SIZE - RULE_GROUP_SIZE ? "|": ""))
   end
   println()
 
-  offset::Uint = 0
+  offsetrule::Uint = RULE_GROUP_SIZE
   for i::Uint in 1:GROUPS
+
+    perspective::Uint = ((r & mskattpersp) >>> (RULE_SIZE - offsetrule + 2))
+    ruleaspect::Uint = ((r & mskattrule) >>> (RULE_SIZE - offsetrule ))
+
     #Attitudinal aspect
-    print(" - ", rpad(attaspect[i],30,"."), " ")
+    print(" - \"", rpad(attaspect[i],30,"."), "\" ")
 
     #Attitudinal perspective
-    if (r & mskattpersp) == 0
-      print("<   ") #print("less than ")
-    else
-      print(">=  ") #print("greater than or equals to ")
+
+    if perspective == EQUALS_TO
+      print("= ")
+    elseif perspective == GREATER_THAN
+      print("> ")
+    elseif perspective == LESS_THAN
+      print("< ")
+    else #DIFFERENT_FROM
+      print("! ")
     end
 
     if i::Uint < GROUPS
-      print("\"", attconcept[((r & mskattrule) >> (15 - offset)) + 1], "\"")
+      print("\"", attconcept[ruleaspect + 1], "\"")
     else
-      print("\"", performance[((r & mskattrule) >> (15 - offset)) + 1], "\"")
+      print("\"", performance[ruleaspect + 1], "\"")
     end
 
-    mskattrule >>= 3
-    mskattpersp >>= 3
-    offset = offset + 3
+    #next group
+    mskattrule >>= RULE_GROUP_SIZE
+    mskattpersp >>= RULE_GROUP_SIZE
+    offsetrule += RULE_GROUP_SIZE
 
     println()
   end
 end
 
 function patterninterpreter(p::Uint)
-  mskattpatt::Uint = 3 << 10 #mask for attitudinal rule block segmentation
+  mskattpatt::Uint = (MSK_2BITS << (PATTERN_SIZE - PATTERN_GROUP_SIZE)) #mask for attitudinal rule block segmentation
 
-  println("> Pattern")
+  print("> Pattern ")
+
+  for b::Uint in 1:PATTERN_GROUP_SIZE:PATTERN_SIZE
+    i = (sizeof(Int) * 8) - PATTERN_SIZE + b
+    j = i + PATTERN_GROUP_SIZE - 1
+    print(bits(p)[i:j],(b < PATTERN_SIZE - PATTERN_GROUP_SIZE ? ".": ""))
+  end
+  println()
 
   offset::Uint = 0
   for i::Uint in 1:GROUPS
     #Attitudinal aspect
-    print(" > ", attaspect[i], " corresponds to ")
+    print(" > \"", attaspect[i], "\" corresponds to ")
 
     if i < GROUPS
-      print("\"", attconcept[((p & mskattpatt) >> (10 - offset)) + 1], "\"")
+      print("\"", attconcept[((p & mskattpatt) >>> (PATTERN_SIZE - PATTERN_GROUP_SIZE - offset)) + 1], "\"")
     else
-      print("\"", performance[((p & mskattpatt) >> (10 - offset)) + 1], "\"")
+      print("\"", performance[((p & mskattpatt) >>> (PATTERN_SIZE - PATTERN_GROUP_SIZE - offset)) + 1], "\"")
     end
 
-    mskattpatt >>= 2
-    offset += 2
+    mskattpatt >>= PATTERN_GROUP_SIZE
+    offset += PATTERN_GROUP_SIZE
 
     println()
   end
 end
 
-function mutate!(pop::Array{Uint,1}, prob::Float32)
+function mutate!(pop::Array{Uint,1}, prob::FloatingPoint)
   for i::Uint = 1:length(pop)
     if(rand() > 1 - prob) #randomly opts to mutation
       pop[i] $= (1 << rand(0:RULE_SIZE - 1)) #mutates one gene (XOR)
@@ -224,12 +267,12 @@ function crossing!(pop::Array{Uint,1}, newpop::Array{Uint,1})
     s1::Uint = newpop[i] #specimen #1
     s2::Uint = pop[i] #specimen #2
 
-    mask::Uint = rand(Uint) & FULLBITS #generates 18 bits randomly selected
+    mask::Uint = rand(Uint) & MSK_FULLBITS #generates 18 bits randomly selected
     geness1::Uint = s1 & mask #randomly selects some genes from specimen #1
     geness2::Uint = s2 & mask #randomly selects some genes from specimen #2
 
     #interchange the selected genes
-    mask = ~mask & FULLBITS
+    mask = ~mask & MSK_FULLBITS
     s1 &= mask
     s2 &= mask
     s1 |= geness2
@@ -252,22 +295,60 @@ function crossing!(pop::Array{Uint,1}, newpop::Array{Uint,1})
   copy!(pop, newpop)
 end
 
-function main()
+#shows the bits of "n" with the relative position
+function debug(n::Uint)
+  print(" ")
+  for i in 0:31
+    print((31-i) % 10)
+  end
+  println()
+  bits(n)
+end
+
+#lists the patterns in loaded data
+function patterns(d::Dict{Uint,Uint},csv::Bool=false)
+  for data in d
+    n = data[2]
+    if csv
+      print(n,",")
+    else
+      print("> $(lpad(n,3," ")) : ")
+    end
+
+    n = bits(data[1])
+    for b::Uint in 1:PATTERN_GROUP_SIZE:PATTERN_SIZE
+      i = (sizeof(Int) * 8) - PATTERN_SIZE + b
+      j = i + PATTERN_GROUP_SIZE - 1
+      if csv
+        print(n[i:j],",")
+      else
+        print(n[i:j],(b < PATTERN_SIZE - PATTERN_GROUP_SIZE ? ".": ""))
+      end
+    end
+    println()
+  end
+end
+
+#the main function
+function main(totpop::Int=25, maxit::Int=100,prob::FloatingPoint=0.1,showprimitiverules::Bool=false)
 
   init()
 
-  tots = load() #loads the patterns data treated and store the total of global patterns
+  tots = load() #loads the patterns data treated and store the total and global total of patterns
+
+#=Replaced by the function signature
   totpop::Int = 15 #total population
   maxit::Uint = 300 #max iterations
-  prob::Float32 = 0.1 #probability of mutation
+  prob::FloatingPoint = 0.1 #probability of mutation
+=#
 
-  println("> ",rpad("distinct patterns",20,"."),": $(tots[1])")
+  println("\n> ",rpad("distinct patterns",20,"."),": $(tots[1])")
   println("> ",rpad("total patterns",20,"."),": $(tots[2])")
   println("> ",rpad("population",20,"."),": $(totpop)")
   println("> ",rpad("iterations",20,"."),": $(maxit)")
-  println("> ",rpad("probablity",20,"."),": $(prob*100)%\n")
+  println("> ",rpad("probablity",20,"."),": $(prob*100)%")
 
-  pop::Array{Uint,1} = rand(0:FULLBITS,totpop) #generate the initial population
+  pop::Array{Uint,1} = rand(0:MAX_RULE,totpop) #generate the initial population
 
   i::Int
   for i = 1:maxit
@@ -278,26 +359,40 @@ function main()
 
   println()
 
-  i = 1
-  for specie in pop
-    println("= ",lpad(i,2," ")," ",bits(specie)[15:end])
-    i += 1
-  end
+  if showprimitiverules
+    i = 1
+    for specie in pop
+      #println("= ",lpad(i,2," ")," ",bits(specie)[(sizeof(Int) * 8 - RULE_SIZE) + 1:end])
 
-  count::Int = 0
-  for specie in pop
-    o::Int = objective(loadeddata, specie)
-    if o > 0
-      @printf "\n> %d patterns matched [%.1f%%]" o o/tots[2]*100
-      ruleinterpreter(specie)
-    else
-      count += 1
+      #enhanced printing
+      for p::Uint in 1:RULE_GROUP_SIZE:RULE_SIZE
+        i = (sizeof(Int) * 8) - RULE_SIZE + p
+        j = i + RULE_GROUP_SIZE - 1
+        print(bits(specie)[i:j],(p < RULE_SIZE - RULE_GROUP_SIZE ? ".": ""))
+      end
+      println()
+
+      i += 1
     end
   end
 
-  if count != 0
-    println("\n* $(count) rules matched to none of the $(tots[1]) patterns!")
+  matched::Int = 0
+  notmatched::Int = 0
+  position::Int = 1
+  for specie in pop
+    o::Int = objective(loadeddata, specie)
+    if o > 0 && (position == 1 || !in(specie,pop[1:position-1]))
+      @printf "\n> %d patterns matched [%.1f%%]" o o/tots[2]*100
+      ruleinterpreter(specie)
+      matched += 1
+    else
+      notmatched += 1
+    end
+    position += 1
   end
+
+  print("\n* $(matched) rules matched patterns and ")
+  println("$(notmatched) rules matched to none of the $(tots[1]) patterns!")
 
 end
 
