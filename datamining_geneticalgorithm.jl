@@ -165,18 +165,18 @@ function ruleinterpreter(r::Uint)
     ruleaspect::Uint = ((r & mskattrule) >>> (RULE_SIZE - offsetrule ))
 
     #Attitudinal aspect
-    print(" - \"", rpad(attaspect[i],30,"."), "\" ")
+    print(" - ", rpad("\""*attaspect[i]*"\"",30,"."))
 
     #Attitudinal perspective
 
     if perspective == EQUALS_TO
-      print("= ")
+      print(" = ")
     elseif perspective == GREATER_THAN
-      print("> ")
+      print(" > ")
     elseif perspective == LESS_THAN
-      print("< ")
+      print(" < ")
     else #DIFFERENT_FROM
-      print("! ")
+      print(" ! ")
     end
 
     if i::Uint < GROUPS
