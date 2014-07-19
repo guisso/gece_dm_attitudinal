@@ -123,10 +123,6 @@ function objective(d::Dict{Uint,Uint}, r::Uint) #d:data patterns to be analized,
 
       end
 
-    if match
-      reach += t[2]
-    end
-
       #next group
       mskattpatt >>= PATTERN_GROUP_SIZE
       mskattrule >>= RULE_GROUP_SIZE
@@ -136,6 +132,11 @@ function objective(d::Dict{Uint,Uint}, r::Uint) #d:data patterns to be analized,
       offsetpatt += PATTERN_GROUP_SIZE
 
     end
+
+    if match
+      reach += t[2]
+    end
+
   end
 
   return reach
