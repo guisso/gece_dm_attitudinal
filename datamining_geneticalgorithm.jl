@@ -86,7 +86,7 @@ function objective(d::Dict{Uint,Uint}, r::Uint) #d:data patterns to be analized,
       perspective::Uint = ((r & mskattpersp) >>> (RULE_SIZE - offsetrule + 2))
       ruleaspect::Uint = ((r & mskattrule) >>> (RULE_SIZE - offsetrule ))
       patternaspect::Uint = ((t[1] & mskattpatt) >>> (PATTERN_SIZE - offsetpatt))
-print("** $(patternaspect) $(perspective) $(ruleaspect)")
+
 # Debug
 #      #$(lpad(XXXX,10," "))
 #      print("* ( $(lpad(r,9," ")) & $(lpad(mskattpersp,9," ")) ) >>> ")
@@ -95,42 +95,38 @@ print("** $(patternaspect) $(perspective) $(ruleaspect)")
 
       #"different from" perspective
       if perspective == DIFFERENT_FROM
-        print(" !")
         if !(patternaspect != ruleaspect)
-          print(" - ")
           match = false
           break
         end
 
       #"less than" perspective
       elseif perspective == LESS_THAN
-        print(" <")
         if !(patternaspect < ruleaspect)
-          print(" - ")
           match = false
           break
         end
 
       #"greater than" perspective
       elseif perspective == GREATER_THAN
-        print(" >")
         if !(patternaspect > ruleaspect)
-          print(" - ")
           match = false
           break
         end
 
       #"equals to" perspective
       else
-        print(" =")
         if !(patternaspect == ruleaspect)
-          print(" - ")
           match = false
           break
         end
 
       end
-println()
+
+    if match
+      reach += t[2]
+    end
+
       #next group
       mskattpatt >>= PATTERN_GROUP_SIZE
       mskattrule >>= RULE_GROUP_SIZE
