@@ -87,12 +87,11 @@ function objective(d::Dict{Uint,Uint}, r::Uint) #d:data patterns to be analized,
       ruleaspect::Uint = ((r & mskattrule) >>> (RULE_SIZE - offsetrule ))
       patternaspect::Uint = ((t[1] & mskattpatt) >>> (PATTERN_SIZE - offsetpatt))
 
-#= Debug
-      #$(lpad(XXXX,10," "))
-      print("* ( $(lpad(r,10," ")) & $(lpad(mskattpersp,10," ")) ) >>> ")
-      print("$(lpad(RULE_SIZE,10," ")) - $(lpad(offsetrule,10," ")) + 2)")
-      println(" = $(perspective)")
-=#
+# Debug
+#      #$(lpad(XXXX,10," "))
+#      print("* ( $(lpad(r,9," ")) & $(lpad(mskattpersp,9," ")) ) >>> ")
+#      print("$(lpad(RULE_SIZE,9," ")) - $(lpad(offsetrule,9," ")) + 2)")
+#      println(" = $(perspective)")
 
       #"different from" perspective
       if perspective == DIFFERENT_FROM
@@ -283,7 +282,7 @@ function crossing!(pop::Array{Uint,1}, newpop::Array{Uint,1})
     avs2::Uint = objective(loadeddata,s2) #evaluate specimen #2
 
     #... and keeps the best of both
-    if(avs1 > avs2)
+    if(avs1 >= avs2)
       newpop[i] = s1
     else
       newpop[i] = s2
@@ -298,8 +297,9 @@ end
 #shows the bits of "n" with the relative position
 function debug(n::Uint)
   print(" ")
-  for i in 0:31
-    print((31-i) % 10)
+  b::Uint = sizeof(Int)*8-1
+  for i in 0:b
+    print((b-i) % 10)
   end
   println()
   bits(n)
@@ -336,17 +336,16 @@ function main(totpop::Int=25, maxit::Int=100,prob::FloatingPoint=0.1,showprimiti
 
   tots = load() #loads the patterns data treated and store the total and global total of patterns
 
-#=Replaced by the function signature
-  totpop::Int = 15 #total population
-  maxit::Uint = 300 #max iterations
-  prob::FloatingPoint = 0.1 #probability of mutation
-=#
+#Replaced by the function signature
+#  totpop::Int = 15 #total population
+#  maxit::Uint = 300 #max iterations
+#  prob::FloatingPoint = 0.1 #probability of mutation
 
-  println("\n> ",rpad("distinct patterns",20,"."),": $(tots[1])")
-  println("> ",rpad("total patterns",20,"."),": $(tots[2])")
-  println("> ",rpad("population",20,"."),": $(totpop)")
-  println("> ",rpad("iterations",20,"."),": $(maxit)")
-  println("> ",rpad("probablity",20,"."),": $(prob*100)%")
+  println("\n> ",rpad("distinct patterns",24,"."),": $(tots[1])")
+  println("> ",rpad("total patterns",24,"."),": $(tots[2])")
+  println("> ",rpad("population",24,"."),": $(totpop)")
+  println("> ",rpad("iterations",24,"."),": $(maxit)")
+  println("> ",rpad("mutation probablity",24,"."),": $(prob*100)%")
 
   pop::Array{Uint,1} = rand(0:MAX_RULE,totpop) #generate the initial population
 
@@ -396,7 +395,7 @@ function main(totpop::Int=25, maxit::Int=100,prob::FloatingPoint=0.1,showprimiti
 
 end
 
-
+#main(int(ARGS[1]), int(ARGS[2]), int(ARGS[3]), FloatingPoint(ARGS[4])) #runs the main program on non-interactive mode
 
 
 
