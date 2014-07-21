@@ -1,4 +1,5 @@
-gece_dm_attitudinal
+GECE - Grupo de Estudos em Computação Evolucionária
 ===================
 
-Genetic Algorithms applied to creation of association rules in Data Mining
+IFNMG - 2014
+- Genetic Algorithms applied to Data Mining on discovering association rules 
