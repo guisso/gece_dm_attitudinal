@@ -307,17 +307,19 @@ function crossing!(pop::Array{Uint,1}, newpop::Array{Uint,1})
     avs1::Uint = objective(loadeddata,s1) #evaluate specimen #1
     avs2::Uint = objective(loadeddata,s2) #evaluate specimen #2
 
-    #... and keeps the best of both
+    #... and keeps the best of both on the original population
     if(avs1 >= avs2)
-      newpop[i] = s1
-    else
-      newpop[i] = s2
+      pop[i] = s1
     end
+
+#    else
+#      newpop[i] = s2
+#    end
 
   end
 
   #place new population on original population
-  copy!(pop, newpop)
+#  copy!(pop, newpop)
 end
 
 #shows the bits of "n" with the relative position
@@ -369,6 +371,8 @@ function main(path::String,file::String,totpop::Int=25, maxit::Int=100,prob::Flo
 
   tots = load(path,file) #loads the patterns data treated and store the total and global total of patterns
 
+  println("\n* Load: $((time() - t0) * 1000) ms")
+
   println("\n> ",rpad("distinct patterns",24,"."),": $(tots[1])")
   println("> ",rpad("total patterns",24,"."),": $(tots[2])")
   println("> ",rpad("population",24,"."),": $(totpop)")
@@ -377,6 +381,7 @@ function main(path::String,file::String,totpop::Int=25, maxit::Int=100,prob::Flo
 
   pop::Array{Uint,1} = rand(0:MAX_RULE,totpop) #generate the initial population
 
+  t0 = time()
   i::Int
   for i = 1:maxit
     sel::Array{Uint,1} = createsnewpopulationbytournament(pop)
@@ -384,7 +389,7 @@ function main(path::String,file::String,totpop::Int=25, maxit::Int=100,prob::Flo
     mutate!(pop, prob)
   end
 
-  println()
+  println("\n* Genetic algorithm: $((time() - t0) * 1000) ms")
 
   if showprimitiverules
     i = 1
@@ -406,6 +411,7 @@ function main(path::String,file::String,totpop::Int=25, maxit::Int=100,prob::Flo
   position::Int = 1
   for specie in pop
     o::Int = objective(loadeddata, specie)
+    #Shows only rules not repeated
     if o > 0 && (position == 1 || !in(specie,pop[1:position-1]))
       @printf "\n> %d patterns matched [%.1f%%]" o o/tots[2]*100
       ruleinterpreter(specie)
@@ -419,6 +425,6 @@ function main(path::String,file::String,totpop::Int=25, maxit::Int=100,prob::Flo
   print("\n* $(matched) rules matched patterns and ")
   println("$(notmatched) rules matched to none of the $(tots[1]) patterns!")
 
-  println("\n* $((time() - t0) * 1000) ms")
+  println("\n* Total elapsed time: $((time() - t0) * 1000) ms")
 
 end
