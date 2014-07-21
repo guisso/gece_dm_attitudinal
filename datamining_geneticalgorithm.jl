@@ -1,4 +1,27 @@
-﻿#= Mining and evolution functions =#
+﻿#======================================================================#
+#=== GRUPO DE ESTUDOS EM COMPUTACAO EVOLUCIONARIA - IFNMG - GUISSSO ===#
+#======================================================================#
+
+# Luis Guisso (luis.guisso@ifnmg.edu.br)
+# v0.3, 21 de julho de 2014
+
+#= Precompilation =#
+t0 = time()
+precompile(init, ())
+precompile(load, ())
+precompile(objective, (Dict{Uint,Uint},Uint))
+precompile(ruleinterpreter, (Uint,))
+precompile(patterninterpreter, (Uint,))
+precompile(mutate!, (Array{Uint,1}, FloatingPoint))
+precompile(fatherbytournament, (Array{Uint,1},))
+precompile(createsnewpopulationbytournament, (Array{Uint,1},))
+precompile(crossing!, (Array{Uint,1},Array{Uint,1}))
+precompile(debug, (Uint,))
+precompile(patterns, (Dict{Uint,Uint},Bool))
+precompile(main, (Int,Int,FloatingPoint,Bool))
+println("* Pre-compilation: $((time() - t0) * 1000) ms")
+
+#= Mining and evolution functions =#
 
 function init()
   #parametric constants
@@ -27,13 +50,11 @@ function init()
   global const performance      = [ "D", "C", "B", "A" ]
 end
 
-function load()
+function load(path::String,file::String)
 
   max::Uint = 2 ^ PATTERN_SIZE
 
-  #cd("YOUR_FILE_DIRECTORY")!
-  cd("C:/Users/Luis/Documents/gece/gece_dm_attitudinal")
-  rawdata = readcsv("attitudinal_extracted_treated_data.csv", Uint)
+  rawdata = readcsv(path*"/"*file, Uint)
   patterns = Array(Uint,max)
   fill!(patterns,0)
 
@@ -335,16 +356,18 @@ function patterns(d::Dict{Uint,Uint},csv::Bool=false)
 end
 
 #the main function
-function main(totpop::Int=25, maxit::Int=100,prob::FloatingPoint=0.1,showprimitiverules::Bool=false)
+function main(path::String,file::String,totpop::Int=25, maxit::Int=100,prob::FloatingPoint=0.1,showprimitiverules::Bool=false)
+
+  if isempty(path) || isempty(file)
+    println("\n# Please provide the path and the data source file.")
+    return
+  end
+
+  t0 = time()
 
   init()
 
-  tots = load() #loads the patterns data treated and store the total and global total of patterns
-
-#Replaced by the function signature
-#  totpop::Int = 15 #total population
-#  maxit::Uint = 300 #max iterations
-#  prob::FloatingPoint = 0.1 #probability of mutation
+  tots = load(path,file) #loads the patterns data treated and store the total and global total of patterns
 
   println("\n> ",rpad("distinct patterns",24,"."),": $(tots[1])")
   println("> ",rpad("total patterns",24,"."),": $(tots[2])")
@@ -366,8 +389,6 @@ function main(totpop::Int=25, maxit::Int=100,prob::FloatingPoint=0.1,showprimiti
   if showprimitiverules
     i = 1
     for specie in pop
-      #println("= ",lpad(i,2," ")," ",bits(specie)[(sizeof(Int) * 8 - RULE_SIZE) + 1:end])
-
       #enhanced printing
       for p::Uint in 1:RULE_GROUP_SIZE:RULE_SIZE
         i = (sizeof(Int) * 8) - RULE_SIZE + p
@@ -398,17 +419,6 @@ function main(totpop::Int=25, maxit::Int=100,prob::FloatingPoint=0.1,showprimiti
   print("\n* $(matched) rules matched patterns and ")
   println("$(notmatched) rules matched to none of the $(tots[1]) patterns!")
 
+  println("\n* $((time() - t0) * 1000) ms")
+
 end
-
-#main(int(ARGS[1]), int(ARGS[2]), int(ARGS[3]), FloatingPoint(ARGS[4])) #runs the main program on non-interactive mode
-
-
-
-
-
-
-
-
-
-
-
